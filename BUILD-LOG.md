@@ -189,16 +189,59 @@ it works manually would just automate a guess.
 
 **Status:** ✅ Complete.
 
-**Follow-up housekeeping (not blocking, but noted for the record):** the service principal
-secret was shared in plain text during setup for troubleshooting purposes. Plan is to rotate it
-via `az ad sp credential reset` once the incident-report step is also complete, and update the
-`AZURE_CREDENTIALS` GitHub secret with the new value.
+**Follow-up housekeeping — credential rotation performed, and a second real incident found in
+the process:** rotated the service principal's secret via `az ad sp credential reset` as
+planned. This produced a genuine failure (different JSON key naming than `azure/login@v2`
+expects) — see `docs/incident-report.md` for the full write-up. Fixed and re-verified working.
 
 ---
 
-## Step 6 — *(not started yet)*
-_(Will be filled in once we get there: deliberately breaking something, diagnosing it, fixing
-it, and writing the incident report — the last major deliverable before the Documented Report.)_
+## Step 6 — Incident Report
+
+**What this step is, in plain terms:** documenting a real failure that happened during the
+build — what broke, how it was diagnosed step by step, what actually caused it, how it was
+fixed, and what the design should learn from it. The brief requires this to be a real incident,
+not a hypothetical one.
+
+**Why this step comes last:** an incident report needs an actual incident to report on — this
+one arose naturally out of the credential rotation performed as follow-up housekeeping from
+Step 5, rather than being artificially staged, which makes it a more honest account of real
+production behavior.
+
+**What was actually done in this step:**
+1. While rotating the Azure service principal's credential (a planned housekeeping action, not
+   a mistake), the next GitHub Actions run failed at the Azure login step with a clear,
+   specific error about missing/mismatched credential keys.
+2. Investigated methodically: first ruled out "the GitHub secret didn't save," then compared
+   the exact JSON keys the workflow expects against what the rotation command actually
+   produced, then traced *why* they differed (two different Azure CLI commands producing two
+   different output shapes).
+3. Identified the root cause precisely: `az ad sp credential reset` returns
+   `appId`/`password`/`tenant` and omits `subscriptionId`, while `azure/login@v2` requires
+   `clientId`/`clientSecret`/`tenantId`/`subscriptionId`.
+4. Fixed it by manually remapping the keys into the correct shape and updating the GitHub
+   secret, then re-ran the workflow and confirmed success.
+5. Wrote the full incident report, including a design reflection on what the original secrets
+   plan should have documented to prevent this confusion on the next rotation.
+
+**Clarifying note for future reference:** the **Client ID** (`3cbdbede-20fe-4be4-b077-4d27738256f4`)
+is the permanent identity of the `gatherloop-github-actions` service principal, assigned once at
+creation and unchanged since. The **Client Secret** is that identity's password, and it's the
+part that changes every time `az ad sp credential reset` is run. This incident was purely a
+secret-rotation key-shape mismatch — the identity itself never changed. A genuinely new identity
+would only come from re-running `create-for-rbac` with a different name.
+
+**Where the output of this step lives:** `docs/incident-report.md`,
+`screenshots/incident-fix-before.png`, `screenshots/incident-fix-after.png`.
+
+**Status:** ✅ Complete.
+
+---
+
+## Remaining work
+- [ ] Final Documented Report (`.docx`) — to be assembled once all screenshots above are
+  collected and confirmed present in `screenshots/`.
+- [ ] Live demo walkthrough (verbal/recorded, per submission requirements).
 
 ---
 
