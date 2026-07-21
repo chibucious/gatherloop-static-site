@@ -1,0 +1,29 @@
+name: Deploy Static Site
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'site/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Sync site content to $web container
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az storage blob upload-batch \
+              --account-name ${{ secrets.STORAGE_ACCOUNT }} \
+              --destination '$web' \
+              --source ./site \
+              --overwrite
