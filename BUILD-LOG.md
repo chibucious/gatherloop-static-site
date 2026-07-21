@@ -123,9 +123,82 @@ dependency, consistent with why Blob hosting was chosen in Step 1.
 
 ---
 
-## Step 4 — *(not started yet)*
-_(Will be filled in once we get there: confirming static website configuration is fully correct,
-then setting up GitHub Actions so future content changes deploy automatically.)_
+## Step 4 — Confirm public access configuration
+
+**What this step is, in plain terms:** verifying that the static website is correctly and
+securely reachable by the public, before wiring up automated deployments in the next step.
+
+**Why this step comes after content upload:** there was no live page to check access for until
+Step 3 put real content on the endpoint.
+
+**What was actually done in this step:**
+1. Opened the Azure Portal → Storage account `gatherloopsite18025` → **Static website** (under
+   "Data management") and confirmed:
+   - Static website hosting: **Enabled**
+   - Index document: `index.html`
+2. Confirmed the live endpoint loads over **HTTPS** by default — Azure Blob static website
+   hosting always serves over HTTPS on the standard port (443), so no manual port configuration
+   was needed here, unlike the VM+Nginx route which would have required explicitly opening and
+   securing port 80/443.
+
+**Where the output of this step lives:** `screenshots/step4-static-website-config.png`.
+
+**Status:** ✅ Complete.
+
+---
+
+## Step 5 — GitHub Actions: auto-deploy on push (mandatory, not bonus)
+
+**What this step is, in plain terms:** wiring up an automated pipeline so that pushing a
+content change to `site/` on GitHub automatically uploads it to Azure — no manual
+`az storage blob upload-batch` command needed ever again after this point.
+
+**Why this step comes last, after everything else works manually:** the workflow only automates
+a process that was already proven to work by hand in Step 3. Automating a step before confirming
+it works manually would just automate a guess.
+
+**What was actually done in this step:**
+1. Created an Azure **service principal** (a dedicated, scoped identity for GitHub Actions to
+   authenticate with Azure) using:
+   ```bash
+   az ad sp create-for-rbac --name "gatherloop-github-actions" --role contributor \
+     --scopes /subscriptions/.../resourceGroups/gatherloop-rg --sdk-auth
+   ```
+   Scoped deliberately to only the `gatherloop-rg` resource group — not the whole subscription —
+   so that if these credentials were ever compromised, the blast radius is limited to this one
+   project.
+2. Added two GitHub repository secrets (Settings → Secrets and variables → Actions):
+   - `AZURE_CREDENTIALS` — the full service principal JSON
+   - `STORAGE_ACCOUNT` — `gatherloopsite18025`
+3. Added `.github/workflows/deploy-static-site.yml`, which on every push to `main` touching
+   `site/**`: logs into Azure using the service principal, then runs
+   `az storage blob upload-batch` to sync `site/` into the `$web` container.
+4. **Hit one real obstacle:** the first push touching a workflow file was rejected by GitHub —
+   `refusing to allow a Personal Access Token to create or update workflow ... without
+   'workflow' scope`. Regenerated the Personal Access Token with the `workflow` scope enabled,
+   cleared the stale cached credential in macOS Keychain, and re-authenticated. Pushed
+   successfully afterward.
+5. **Tested the pipeline end-to-end:** made a small, visible content change to `site/index.html`,
+   pushed to `main`, and watched the Actions tab. The workflow ran automatically, both steps
+   (Azure login, then blob sync) completed successfully, and reloading the live endpoint
+   confirmed the change had actually deployed — proving the automation genuinely works, not
+   just that it runs without erroring.
+
+**Where the output of this step lives:** `.github/workflows/deploy-static-site.yml`,
+`screenshots/step5-github-actions-success.png`, `screenshots/step5-live-update-confirmed.png`.
+
+**Status:** ✅ Complete.
+
+**Follow-up housekeeping (not blocking, but noted for the record):** the service principal
+secret was shared in plain text during setup for troubleshooting purposes. Plan is to rotate it
+via `az ad sp credential reset` once the incident-report step is also complete, and update the
+`AZURE_CREDENTIALS` GitHub secret with the new value.
+
+---
+
+## Step 6 — *(not started yet)*
+_(Will be filled in once we get there: deliberately breaking something, diagnosing it, fixing
+it, and writing the incident report — the last major deliverable before the Documented Report.)_
 
 ---
 
