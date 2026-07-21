@@ -38,7 +38,7 @@ first is how a project ends up working "by accident" instead of being properly d
 5. Wrote a short, plain-English explanation addressed to the (fictional) nervous founder, since
    a non-technical person needs to be able to trust the decision, not just be told a technical term.
 
-**Where the output of this step lives:** `docs/design-worksheet.md`
+**Where the output of this step lives:** `docs/01-design-worksheet.md`
 
 **Status:** ✅ Complete. No Azure resources exist yet — this step was reasoning and writing only.
 
@@ -192,7 +192,7 @@ it works manually would just automate a guess.
 **Follow-up housekeeping — credential rotation performed, and a second real incident found in
 the process:** rotated the service principal's secret via `az ad sp credential reset` as
 planned. This produced a genuine failure (different JSON key naming than `azure/login@v2`
-expects) — see `docs/incident-report.md` for the full write-up. Fixed and re-verified working.
+expects) — see `docs/02-incident-report.md` for the full write-up. Fixed and re-verified working.
 
 ---
 
@@ -231,7 +231,7 @@ part that changes every time `az ad sp credential reset` is run. This incident w
 secret-rotation key-shape mismatch — the identity itself never changed. A genuinely new identity
 would only come from re-running `create-for-rbac` with a different name.
 
-**Where the output of this step lives:** `docs/incident-report.md`,
+**Where the output of this step lives:** `docs/02-incident-report.md`,
 `screenshots/incident-fix-before.png`, `screenshots/incident-fix-after.png`.
 
 **Status:** ✅ Complete.
