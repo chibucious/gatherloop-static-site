@@ -1,8 +1,7 @@
 # GatherLoop Static Site
 
 Static site deployment for the GatherLoop conference launch page — built as the personal
-capstone project for **Group 3: Static Site Deployment, Choose Your Architecture** (Cloud &
-DevOps Bootcamp).
+capstone project for **Group 3: Static Site Deployment.**
 
 **Live site:** https://gatherloopsite18025.z1.web.core.windows.net/
 **Cloud provider:** Microsoft Azure (Free Tier account)
