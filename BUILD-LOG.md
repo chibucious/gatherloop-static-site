@@ -85,9 +85,47 @@ showing successful creation and the static website endpoint).
 
 ---
 
-## Step 3 — *(not started yet)*
-_(Will be filled in once we get there: uploading the actual site content — including the
-Tailwind v4 landing page — so the endpoint above serves a real page instead of a blank one.)_
+## Step 3 — Upload site content
+
+**What this step is, in plain terms:** putting the actual website files (the Tailwind v4 landing
+page) into the storage account created in Step 2, so the live endpoint serves a real page
+instead of a blank/404 one.
+
+**Why this step comes after Step 2:** the storage account and static website mode had to exist
+first — there was nowhere to upload files to until Step 2 was complete.
+
+**What was actually done in this step:**
+1. Built the landing page locally (Tailwind v4, compiled to a single static CSS file — no
+   runtime build step needed, matching the "static files only" nature of Blob hosting) into the
+   repo's `site/` folder.
+2. Uploaded the contents of `site/` into the storage account's special `$web` container — the
+   exact container Azure serves static website content from — using:
+   ```bash
+   az storage blob upload-batch \
+     --account-name gatherloopsite18025 \
+     --destination '$web' \
+     --source ./site \
+     --overwrite
+   ```
+3. Verified by opening the live endpoint directly in a browser:
+   **`https://gatherloopsite18025.z1.web.core.windows.net/`** — confirmed the real page now
+   loads, replacing the earlier blank/404 response from Step 2.
+
+**Design note (per "if your build diverges, add a one-line note"):** Tailwind v4 CSS is compiled
+locally into a single static CSS file and uploaded alongside `index.html`, rather than loaded
+via CDN at request time — this keeps production serving purely static files with zero runtime
+dependency, consistent with why Blob hosting was chosen in Step 1.
+
+**Where the output of this step lives:** `site/` (source), `screenshots/step3-live-site.png`
+(proof of the live page loading).
+
+**Status:** ✅ Complete.
+
+---
+
+## Step 4 — *(not started yet)*
+_(Will be filled in once we get there: confirming static website configuration is fully correct,
+then setting up GitHub Actions so future content changes deploy automatically.)_
 
 ---
 
