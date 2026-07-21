@@ -44,9 +44,50 @@ first is how a project ends up working "by accident" instead of being properly d
 
 ---
 
-## Step 2 — *(not started yet)*
-_(Will be filled in once we get there: provisioning the chosen hosting method using the Azure
-CLI — no manual clicking in the Azure Portal, so the process is scripted and repeatable.)_
+## Step 2 — Provision Azure Blob Static Website Hosting (CLI only)
+
+**What this step is, in plain terms:** creating the actual Azure resources that will host the
+site — a resource group (a folder to keep everything organized in one place), a storage
+account (the "filing cabinet"), and switching that storage account into static website mode.
+All done via the Azure CLI, not by clicking around the Azure Portal, so the process is scripted
+and repeatable rather than a one-off series of clicks nobody could reproduce.
+
+**Why this step comes after Step 1 and before content upload:** the hosting method had to be
+decided and justified first (Step 1). Now that the decision is Blob Static Website Hosting, this
+step creates the actual place for the site to live — before any files are uploaded to it.
+
+**What was actually done in this step:**
+1. Ran `scripts/provision-static-site.sh`, which:
+   - Created a resource group named `gatherloop-rg` in the `southafricanorth` Azure region.
+   - Created a Storage Account named `gatherloopsite18025` (`Standard_LRS` SKU — the cheapest
+     redundancy tier, appropriate for a small conference landing page).
+   - Enabled static website hosting on that storage account, with `index.html` set as both the
+     index document and the 404 fallback document.
+2. Confirmed success by checking the command output directly:
+   `"staticWebsite": { "enabled": true, "indexDocument": "index.html" }`
+3. Recorded the live static website endpoint for later use:
+   **`https://gatherloopsite18025.z1.web.core.windows.net/`**
+
+**Resources created (for the record):**
+| Resource | Name | Region |
+|---|---|---|
+| Resource group | `gatherloop-rg` | South Africa North |
+| Storage account | `gatherloopsite18025` | South Africa North |
+| Static website endpoint | `https://gatherloopsite18025.z1.web.core.windows.net/` | — |
+
+**Note:** at this point in the build, opening the endpoint above returns a blank/404-style page.
+That is expected — no site files have been uploaded yet. That happens in Step 3.
+
+**Where the output of this step lives:** `screenshots/step2-provisioning.png` (terminal output
+showing successful creation and the static website endpoint).
+
+**Status:** ✅ Complete.
+
+---
+
+## Step 3 — *(not started yet)*
+_(Will be filled in once we get there: uploading the actual site content — including the
+Tailwind v4 landing page — so the endpoint above serves a real page instead of a blank one.)_
 
 ---
 
