@@ -130,7 +130,22 @@ that maintenance.
 
 ---
 
-## Part 6 — Why this had to be written before any building happened
+## Part 6 — Downtime response speed as an explicit design priority
+Beyond choosing an architecture that avoids downtime under normal spike conditions, a second
+priority guided this project: if something did go wrong, how quickly could it be caught and
+fixed before it became visible to real visitors? This shaped two concrete decisions:
+- Using GitHub Actions with a visible pass/fail status on every deploy, rather than a silent
+  manual upload, so a broken deploy is caught within seconds, not discovered later by a visitor.
+- Documenting the exact rotation and recovery procedure for the Azure credential (see
+  `docs/incident-report.md`), so a future credential-related failure has a known, fast fix
+  rather than requiring rediscovery under pressure.
+This priority was tested for real during the build: a credential-rotation failure was caught by
+the very next deploy attempt (not by a visitor noticing the site was broken), diagnosed, and
+fixed within one troubleshooting session — see the incident report for the full timeline.
+
+---
+
+## Part 7 — Why this had to be written before any building happened
 Writing this comparison first — instead of building something and justifying it afterward —
 means the decision was actually driven by GatherLoop's requirements, not by convenience or
 familiarity. That is exactly the difference the brief is testing for: *"A system that happens
